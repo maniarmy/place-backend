@@ -4,6 +4,7 @@ const {validationResult} = require('express-validator');
 const HttpError = require('../models/http-error');
 const Place = require('../models/place');
 const User = require('../models/user');
+const getCoordinates = require('./geocoding');
 //const { v4: uuid } = require('uuid');
 
 const getPlaceById = async(req, res, next) => {
@@ -56,11 +57,21 @@ const getPlacesByUserId = async(req, res, next) => {
      throw new HttpError('Invalid input passed, please check your data', 422)
     }
 
-    const { title, description, address, creator } = req.body;
+  const { title, description, address} = req.body;
+
+    let coordinates;
+    try {
+        coordinates = await getCoordinates(address, next);
+        if (!coordinates) return;
+    } catch (err) {
+        return next(err);
+    }
+
+    
     const createdPlace = new Place({
       title,
       description,
-      //location: coordinates,
+      location: coordinates,
       image: req.file.path,
       address,
       creator: req.userData.userId
@@ -111,7 +122,16 @@ const getPlacesByUserId = async(req, res, next) => {
      ) 
     }
 
-    const { title, description } = req.body;
+    const { title, description, address } = req.body;
+
+    let coordinates;
+    try {
+        coordinates = await getCoordinates(address, next);
+        if (!coordinates) return;
+    } catch (err) {
+        return next(err);
+    }
+
     const placeId = req.params.pid;
   
     let place;
@@ -134,6 +154,13 @@ const getPlacesByUserId = async(req, res, next) => {
 
     place.title = title;
     place.description = description;
+    place.address = address;
+    place.location = coordinates
+    
+   // Update the image only if a new one is uploaded
+  if (req.file) {
+    place.image = req.file.path;
+   }  
 
     try{
       await place.save();

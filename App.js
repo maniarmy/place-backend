@@ -48,7 +48,7 @@ res.json({message: error.message || 'unkown erroor occured'})
 
 mongoose
 //.connect('mongodb://localhost:27017/place')
-.connect(`mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}.ll1tv.mongodb.net/?retryWrites=true&w=majority&appName=${process.env.DB_NAME}`)
+.connect(`mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@placecluster.ll1tv.mongodb.net/?retryWrites=true&w=majority&appName=${process.env.DB_NAME}`)
 .then(()=>{
     console.log("connection successfull")
     app.listen(5000);
